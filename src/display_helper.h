@@ -74,6 +74,18 @@ public:
     drawCenteredText("Ceil: ---", 165, TFT_WHITE, 2);
     drawCenteredText("Radar: Soon", 195, TFT_GREEN, 2);
   }
+  void errorScreen(const String& title, const String& message) {
+  tft->fillScreen(TFT_BLACK);
+  tft->drawCircle(120, 120, 118, TFT_RED);
+
+  tft->setTextDatum(MC_DATUM);
+
+  tft->setTextColor(TFT_RED, TFT_BLACK);
+  tft->drawString(title, 120, 85, 4);
+
+  tft->setTextColor(TFT_WHITE, TFT_BLACK);
+  tft->drawString(message, 120, 125, 2);
+}
   void metarScreen(const MetarData& metar) {
   tft->fillScreen(TFT_BLACK);
   tft->drawCircle(120, 120, 118, TFT_DARKGREY);
@@ -82,7 +94,7 @@ public:
   tft->setTextDatum(TL_DATUM);
 
   tft->setTextColor(TFT_YELLOW, TFT_BLACK);
-  tft->drawString(metar.airport, 35, 28, 4);
+  tft->drawString(metar.airport, 55, 28, 4);   // moved right
 
   tft->setTextColor(TFT_GREEN, TFT_BLACK);
   tft->drawString(metar.flightCategory, 145, 34, 2);
@@ -104,10 +116,5 @@ public:
   tft->drawString(metar.ceiling, 90, 128, 2);
   tft->drawString(metar.altimeter, 90, 153, 2);
   tft->drawString(metar.temperature, 90, 178, 2);
-
-  // Radar placeholder
-  tft->setTextDatum(MC_DATUM);
-  tft->setTextColor(TFT_GREEN, TFT_BLACK);
-  tft->drawString(metar.radarSummary, 120, 214, 2);
 }
 };

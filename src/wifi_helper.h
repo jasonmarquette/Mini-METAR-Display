@@ -15,7 +15,7 @@ private:
     code.toUpperCase();
 
     if (code.length() != 4) {
-      return "KDWH";
+      return "KCXO";
     }
 
     return code;
