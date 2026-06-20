@@ -34,9 +34,11 @@ void drawWiFiConnectedScreen() {
   tft.fillScreen(TFT_BLACK);
   tft.drawCircle(120, 120, 118, TFT_GREEN);
 
-  drawCenteredText("WiFi Connected", 85, TFT_GREEN, 2);
-  drawCenteredText(wifi.ipAddress(), 120, TFT_WHITE, 2);
-  drawCenteredText("Ready for METAR", 155, TFT_CYAN, 2);
+  drawCenteredText("WiFi Connected", 75, TFT_GREEN, 2);
+  drawCenteredText(wifi.ipAddress(), 105, TFT_WHITE, 2);
+
+  drawCenteredText("Airport:", 140, TFT_CYAN, 2);
+  drawCenteredText(wifi.airport(), 165, TFT_YELLOW, 4);
 }
 
 void drawWiFiFailedScreen() {

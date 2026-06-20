@@ -3,26 +3,62 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiManager.h>
+#include <Preferences.h>
 
 class WiFiHelper {
+private:
+  Preferences prefs;
+  String airportCode = "KCXO";
+
+  String normalizeAirportCode(String code) {
+    code.trim();
+    code.toUpperCase();
+
+    if (code.length() != 4) {
+      return "KDWH";
+    }
+
+    return code;
+  }
+
 public:
   bool begin() {
+    prefs.begin("mini-metar", false);
+
+    airportCode = prefs.getString("airport", "KDWH");
+
     WiFiManager wm;
 
     wm.setDebugOutput(true);
-
-    // If no one configures Wi-Fi within 3 minutes, give up.
     wm.setConfigPortalTimeout(180);
+
+    char airportBuffer[8];
+    airportCode.toCharArray(airportBuffer, sizeof(airportBuffer));
+
+    WiFiManagerParameter airportParam(
+      "airport",
+      "Airport ICAO Code",
+      airportBuffer,
+      5
+    );
+
+    wm.addParameter(&airportParam);
 
     /*
       First it tries saved Wi-Fi credentials.
+
       If that fails, it creates this setup network:
 
         MiniMETAR-Setup
 
-      Then you connect to that network and open:
+      Go to:
 
         http://192.168.4.1
+
+      The portal will ask for:
+      - Wi-Fi network
+      - Wi-Fi password
+      - Airport ICAO Code
     */
     bool connected = wm.autoConnect("MiniMETAR-Setup");
 
@@ -31,9 +67,15 @@ public:
       return false;
     }
 
+    airportCode = normalizeAirportCode(String(airportParam.getValue()));
+    prefs.putString("airport", airportCode);
+
     Serial.println("WiFi connected.");
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
+
+    Serial.print("Airport code: ");
+    Serial.println(airportCode);
 
     return true;
   }
@@ -42,7 +84,10 @@ public:
     WiFiManager wm;
     wm.resetSettings();
 
-    Serial.println("Saved Wi-Fi settings erased.");
+    prefs.begin("mini-metar", false);
+    prefs.clear();
+
+    Serial.println("Saved Wi-Fi and airport settings erased.");
   }
 
   bool isConnected() {
@@ -55,5 +100,9 @@ public:
     }
 
     return WiFi.localIP().toString();
+  }
+
+  String airport() {
+    return airportCode;
   }
 };
