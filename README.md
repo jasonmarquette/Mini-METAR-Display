@@ -1,23 +1,29 @@
 # Mini METAR Display
 
-Mini METAR Display is an ESP32-C3 project for a 1.28 inch round 240×240 TFT display. The goal is to show aviation weather information, starting with a simple display and Wi-Fi setup portal, then later adding METAR data and optional radar weather summaries.
+Mini METAR Display is an ESP32-C3 project that displays live aviation weather on a 1.28 inch round 240×240 TFT display.
+
+The project uses an ESP32-C3 Super Mini, a GC9A01 round TFT display, Wi-Fi setup through a captive portal, and live METAR data from AviationWeather.gov.
 
 ## Current Status
 
-This project currently includes:
+This project currently supports:
 
-* ESP32-C3 Super Mini PlatformIO setup
-* GC9A01 240×240 round TFT display configuration
-* TFT display startup screens
-* Wi-Fi setup helper using WiFiManager
-* Captive portal Wi-Fi setup so SSID and password are not hard-coded
+* ESP32-C3 Super Mini
+* 1.28 inch round 240×240 GC9A01 TFT display
+* Wi-Fi setup portal using WiFiManager
+* Airport ICAO code configuration during Wi-Fi setup
+* Saved Wi-Fi and airport settings
+* Live METAR fetch from AviationWeather.gov
+* Automatic METAR refresh every 5 minutes
+* Display of:
 
-Future planned features:
-
-* Fetch METAR data from AviationWeather.gov
-* Display station, flight category, wind, visibility, ceiling, altimeter, and temperature
-* Optional radar weather summary
-* Optional 3D printed case
+  * Airport code
+  * Flight category
+  * Wind
+  * Visibility
+  * Ceiling
+  * Altimeter
+  * Temperature in Celsius and Fahrenheit
 
 ## Hardware
 
@@ -26,24 +32,25 @@ Future planned features:
 * ESP32-C3 Super Mini development board
 * 1.28 inch round TFT LCD display module
 * 240×240 resolution
-* Likely display driver: GC9A01
+* GC9A01 display driver
 * USB-C cable
 * Jumper wires
 
 ## Display Wiring
 
-| TFT Display Pin | ESP32-C3 Super Mini Pin |
-| --------------- | ----------------------- |
-| VCC / VIN       | 3V3                     |
-| GND             | GND                     |
-| SCL / SCK       | GPIO 4                  |
-| SDA / MOSI      | GPIO 6                  |
-| CS              | GPIO 7                  |
-| DC              | GPIO 2                  |
-| RES / RST       | GPIO 3                  |
-| BL / LED / BLK  | 3V3                     |
+| TFT Display Pin        | ESP32-C3 Super Mini Pin |
+| ---------------------- | ----------------------- |
+| `VCC` / `VIN`          | `3V3`                   |
+| `GND`                  | `GND`                   |
+| `SCL` / `SCK` / `CLK`  | `GPIO 4`                |
+| `SDA` / `MOSI` / `DIN` | `GPIO 6`                |
+| `CS`                   | `GPIO 7`                |
+| `DC`                   | `GPIO 2`                |
+| `RES` / `RST`          | `GPIO 3`                |
 
-The backlight pin may be labeled `BL`, `LED`, or `BLK`. Connect it to `3V3`. If the backlight is not connected, the display may appear black even if the code is running.
+The backlight pin may be labeled `BL`, `LED`, or `BLK`.
+
+Connect the backlight pin to `3V3`. If the backlight is not connected, the display may appear black even if the firmware is running.
 
 ## Software Requirements
 
@@ -57,7 +64,9 @@ This project uses the Arduino framework through PlatformIO.
 
 ## PlatformIO Environment
 
-The project is configured for:
+The project uses the `esp32-c3-devkitm-1` board profile.
+
+The ESP32-C3 Super Mini is not always listed directly in PlatformIO, so this board profile is used as a compatible starting point.
 
 ```ini
 [env:esp32-c3-supermini]
@@ -67,8 +76,6 @@ framework = arduino
 monitor_speed = 115200
 ```
 
-The ESP32-C3 Super Mini is not always listed directly in PlatformIO, so this project uses the `esp32-c3-devkitm-1` board profile.
-
 ## Libraries
 
 The project uses:
@@ -77,11 +84,36 @@ The project uses:
 * `bblanchon/ArduinoJson`
 * `tzapu/WiFiManager`
 
-`TFT_eSPI` is used for the round TFT display.
+`TFT_eSPI` drives the round TFT display.
 
-`WiFiManager` is used to create a Wi-Fi setup portal so Wi-Fi credentials are not stored directly in the code.
+`WiFiManager` creates the Wi-Fi setup portal and stores Wi-Fi credentials.
 
-`ArduinoJson` is included for future METAR API parsing.
+`ArduinoJson` parses the live METAR JSON response.
+
+## Display Configuration
+
+The GC9A01 display and SPI pins are configured in `platformio.ini` using build flags.
+
+Current pin mapping:
+
+```ini
+-D GC9A01_DRIVER=1
+-D TFT_WIDTH=240
+-D TFT_HEIGHT=240
+-D TFT_MOSI=6
+-D TFT_SCLK=4
+-D TFT_CS=7
+-D TFT_DC=2
+-D TFT_RST=3
+-D TFT_BL=-1
+```
+
+USB serial support for the ESP32-C3 is enabled with:
+
+```ini
+-D ARDUINO_USB_MODE=1
+-D ARDUINO_USB_CDC_ON_BOOT=1
+```
 
 ## Build Instructions
 
@@ -120,10 +152,16 @@ If upload fails, put the ESP32-C3 into boot/download mode:
 
 ## Serial Monitor
 
-To open the serial monitor:
+Open the serial monitor with:
 
 ```bash
-pio device monitor --baud 115200
+pio device monitor --port /dev/cu.usbmodem12301 --baud 115200
+```
+
+Your port may be different. To list connected serial devices:
+
+```bash
+pio device list
 ```
 
 To exit the serial monitor:
@@ -146,7 +184,7 @@ To configure Wi-Fi:
 
 1. Power on the ESP32-C3
 2. Wait for the display to show the Wi-Fi setup screen
-3. On your phone or computer, connect to the Wi-Fi network:
+3. On your phone or computer, connect to:
 
 ```text
 MiniMETAR-Setup
@@ -159,46 +197,136 @@ MiniMETAR-Setup
 http://192.168.4.1
 ```
 
-6. Select your home Wi-Fi network
+6. Select your home 2.4 GHz Wi-Fi network
 7. Enter the Wi-Fi password
-8. Save
-9. The ESP32-C3 should connect and show its IP address on the display
+8. Enter the airport ICAO code, for example:
+
+```text
+KCXO
+```
+
+9. Save the configuration
 
 After Wi-Fi is saved, the ESP32-C3 should reconnect automatically on future boots.
 
-## Resetting Saved Wi-Fi
+## Airport Code Setup
 
-The project includes a helper function for clearing saved Wi-Fi settings:
+The airport code is entered during Wi-Fi setup.
 
-```cpp
-wifi.resetSettings();
+Examples:
+
+```text
+KCXO
+KDWH
+KIAH
+KHOU
 ```
 
-A physical reset button may be added later so saved Wi-Fi can be cleared without reflashing the board.
+The airport code is saved in flash memory and reused on future boots.
+
+The default airport code is configured in:
+
+```text
+src/wifi_helper.h
+```
+
+Look for the default airport value in that file if you want to change it.
+
+## Live METAR Data
+
+After Wi-Fi connects, the ESP32-C3 fetches live METAR data from AviationWeather.gov.
+
+The API request format is:
+
+```text
+https://aviationweather.gov/api/data/metar?ids=KCXO&format=json
+```
+
+The airport code is replaced with the saved airport code from setup.
+
+## Refresh Interval
+
+The display fetches live METAR data:
+
+* Once at startup after Wi-Fi connects
+* Then every 5 minutes
+
+The refresh interval is controlled in `src/main.cpp`:
+
+```cpp
+const unsigned long METAR_REFRESH_MS = 5UL * 60UL * 1000UL;
+```
+
+This equals 300,000 milliseconds, or 5 minutes.
+
+## Displayed Weather Fields
+
+The current display shows:
+
+* Airport code
+* Flight category, such as `VFR`, `MVFR`, `IFR`, or `LIFR`
+* Wind
+* Visibility
+* Ceiling
+* Altimeter
+* Temperature in Celsius and Fahrenheit
+
+Example display:
+
+```text
+KCXO    VFR
+
+Wind 160 @ 08 kt
+Vis  10 SM
+Ceil BKN 3500
+Alt  29.92
+Temp 29C / 84F
+```
 
 ## Project Structure
 
 ```text
 Mini-METAR-Display/
+├── LICENSE
 ├── README.md
 ├── platformio.ini
-├── src/
-│   ├── main.cpp
-│   └── wifi_helper.h
-└── docs/
-    └── wiring.md
+└── src/
+    ├── display_helper.h
+    ├── main.cpp
+    ├── metar_client.h
+    └── wifi_helper.h
 ```
 
-## Current Startup Behavior
+## Main Source Files
 
-When the project runs:
+### `src/main.cpp`
 
-1. The TFT display initializes
-2. The screen shows `Mini METAR`
-3. The device starts Wi-Fi setup
-4. If Wi-Fi is not configured, it creates `MiniMETAR-Setup`
-5. After Wi-Fi connects, the display shows the assigned IP address
-6. The device is then ready for future METAR functionality
+Controls the main program flow:
+
+1. Starts serial output
+2. Initializes the display
+3. Connects to Wi-Fi
+4. Shows the saved airport code
+5. Fetches live METAR data
+6. Refreshes METAR data every 5 minutes
+
+### `src/display_helper.h`
+
+Contains the TFT display drawing functions.
+
+This file controls the layout of the startup screen, Wi-Fi screens, error screens, and METAR display screen.
+
+### `src/wifi_helper.h`
+
+Handles Wi-Fi setup using WiFiManager.
+
+It also stores and retrieves the airport ICAO code.
+
+### `src/metar_client.h`
+
+Handles live METAR fetching and parsing.
+
+It builds the AviationWeather.gov API URL, fetches JSON, parses the response, and formats display-ready fields.
 
 ## Troubleshooting
 
@@ -210,6 +338,7 @@ Check:
 * `GND` is connected to `GND`
 * `BL`, `LED`, or `BLK` is connected to `3V3`
 * SPI pins match the wiring table
+* Firmware uploaded successfully
 
 ### Display shows garbage
 
@@ -243,31 +372,19 @@ Then rebuild and upload.
 
 ### Display is rotated wrong
 
-In `src/main.cpp`, change:
+In `src/display_helper.h` or `src/main.cpp`, find:
+
+```cpp
+tft->setRotation(0);
+```
+
+or:
 
 ```cpp
 tft.setRotation(0);
 ```
 
-Try:
-
-```cpp
-tft.setRotation(1);
-```
-
-or:
-
-```cpp
-tft.setRotation(2);
-```
-
-or:
-
-```cpp
-tft.setRotation(3);
-```
-
-Then rebuild and upload.
+Try values `1`, `2`, or `3`, then rebuild and upload.
 
 ### Wi-Fi setup page does not open
 
@@ -283,27 +400,55 @@ Then manually open:
 http://192.168.4.1
 ```
 
-### Build warnings from TFT_eSPI
+### Board connects to Wi-Fi but METAR fails
 
-Some warnings may appear from the `TFT_eSPI` library. These are usually library warnings and may not prevent the project from building.
-
-If the build ends with:
+Open the serial monitor and look for:
 
 ```text
-SUCCESS
+Fetching METAR:
+METAR HTTP code:
+METAR payload:
 ```
 
-the project compiled correctly.
+If the HTTP code is not `200`, the request failed.
+
+Check:
+
+* The board is connected to Wi-Fi
+* The airport code is valid
+* The network has internet access
+* The airport has recent METAR data available
+
+### Serial monitor disconnects and reconnects
+
+This can happen when the ESP32-C3 resets:
+
+```text
+Disconnected
+Reconnecting
+Connected
+```
+
+This is usually normal.
+
+Use upload and monitor as separate steps:
+
+```bash
+pio run -e esp32-c3-supermini --target upload
+pio device monitor --port /dev/cu.usbmodem12301 --baud 115200
+```
+
+Avoid using the combined `Upload and Monitor` task if it causes serial issues.
 
 ## Git Commands
 
-Initialize the repository:
+Check status:
 
 ```bash
-git init
+git status
 ```
 
-Add files:
+Add changes:
 
 ```bash
 git add .
@@ -312,18 +457,16 @@ git add .
 Commit:
 
 ```bash
-git commit -m "Initial Mini METAR Display project"
+git commit -m "Update README for live METAR display"
 ```
 
-Push to GitHub:
+Push:
 
 ```bash
-git branch -M main
-git remote add origin git@github.com:jasonmarquette/Mini-METAR-Display.git
-git push -u origin main
+git push
 ```
 
-## Planned Roadmap
+## Roadmap
 
 ### Version 0.1.0
 
@@ -333,19 +476,27 @@ git push -u origin main
 
 ### Version 0.2.0
 
-* Fetch raw METAR from AviationWeather.gov
-* Display raw METAR on screen
+* Airport ICAO code setup
+* Saved airport configuration
 
 ### Version 0.3.0
 
-* Decode METAR fields
-* Display flight category, wind, visibility, ceiling, altimeter, and temperature
+* Live METAR fetching
+* METAR display screen
+* 5-minute refresh interval
 
 ### Version 0.4.0
 
-* Add optional radar weather summary
+* Improved display layout
+* Better error messages
+* Wi-Fi reset/configuration button
 
 ### Version 0.5.0
 
-* Add polished display layout and 3D printed enclosure
+* Optional radar weather summary
+* 3D printed enclosure
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
