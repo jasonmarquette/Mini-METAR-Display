@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <TFT_eSPI.h>
+#include "metar_client.h"
 
 class DisplayHelper {
 private:
@@ -73,4 +74,40 @@ public:
     drawCenteredText("Ceil: ---", 165, TFT_WHITE, 2);
     drawCenteredText("Radar: Soon", 195, TFT_GREEN, 2);
   }
+  void metarScreen(const MetarData& metar) {
+  tft->fillScreen(TFT_BLACK);
+  tft->drawCircle(120, 120, 118, TFT_DARKGREY);
+
+  // Header
+  tft->setTextDatum(TL_DATUM);
+
+  tft->setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft->drawString(metar.airport, 35, 28, 4);
+
+  tft->setTextColor(TFT_GREEN, TFT_BLACK);
+  tft->drawString(metar.flightCategory, 145, 34, 2);
+
+  // Separator line
+  tft->drawLine(35, 65, 205, 65, TFT_DARKGREY);
+
+  // METAR fields
+  tft->setTextColor(TFT_CYAN, TFT_BLACK);
+  tft->drawString("Wind", 38, 78, 2);
+  tft->drawString("Vis", 38, 103, 2);
+  tft->drawString("Ceil", 38, 128, 2);
+  tft->drawString("Alt", 38, 153, 2);
+  tft->drawString("Temp", 38, 178, 2);
+
+  tft->setTextColor(TFT_WHITE, TFT_BLACK);
+  tft->drawString(metar.wind, 90, 78, 2);
+  tft->drawString(metar.visibility, 90, 103, 2);
+  tft->drawString(metar.ceiling, 90, 128, 2);
+  tft->drawString(metar.altimeter, 90, 153, 2);
+  tft->drawString(metar.temperature, 90, 178, 2);
+
+  // Radar placeholder
+  tft->setTextDatum(MC_DATUM);
+  tft->setTextColor(TFT_GREEN, TFT_BLACK);
+  tft->drawString(metar.radarSummary, 120, 214, 2);
+}
 };

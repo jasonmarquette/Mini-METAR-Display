@@ -3,10 +3,12 @@
 
 #include "wifi_helper.h"
 #include "display_helper.h"
+#include "metar_client.h"
 
 TFT_eSPI tft = TFT_eSPI();
 WiFiHelper wifi;
 DisplayHelper screen(&tft);
+MetarClient metarClient;
 
 void setup() {
   Serial.begin(115200);
@@ -30,7 +32,8 @@ void setup() {
   screen.wifiConnectedScreen(wifi.ipAddress(), wifi.airport());
   delay(3000);
 
-  screen.metarPlaceholderScreen(wifi.airport());
+  MetarData metar = metarClient.sample(wifi.airport());
+  screen.metarScreen(metar);
 
   Serial.println("Setup complete.");
 }
