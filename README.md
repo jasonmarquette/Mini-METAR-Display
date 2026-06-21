@@ -1,5 +1,7 @@
 # Mini METAR Display
 
+![Plane Radar running on the 3.5" 480x320 SPI Serial Resistive LCD Touch Panels TFT Display Module ILI9488 display](images/METAR-Screen.jpeg)
+
 Mini METAR Display is an ESP32-C3 project that shows live aviation weather on a 1.28 inch round 240×240 TFT display.
 
 It uses an ESP32-C3 Super Mini, a GC9A01 round TFT display, Wi-Fi setup through a captive portal, and live METAR data from AviationWeather.gov.
