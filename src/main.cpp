@@ -15,7 +15,7 @@ WiFiHelper wifi;
 DisplayHelper screen(&tft);
 MetarClient metarClient;
 
-const unsigned long METAR_REFRESH_MS = 3UL * 60UL * 1000UL;
+const unsigned long METAR_REFRESH_MS = 5UL * 60UL * 1000UL;
 unsigned long lastMetarRefresh = 0;
 
 void updateMetar() {

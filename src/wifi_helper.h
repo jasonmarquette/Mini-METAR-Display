@@ -25,7 +25,7 @@ public:
   bool begin() {
     prefs.begin("mini-metar", false);
 
-    airportCode = prefs.getString("airport", "KDWH");
+    airportCode = prefs.getString("airport", "KCXO");
 
     WiFiManager wm;
 
