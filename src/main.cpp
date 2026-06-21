@@ -27,8 +27,12 @@ void updateMetar() {
   if (metarClient.fetch(wifi.airport(), metar)) {
     screen.metarScreen(metar);
     lastMetarRefresh = millis();
+
+    Serial.println("METAR update successful.");
   } else {
-    screen.errorScreen("METAR Fail", wifi.airport());
+    lastMetarRefresh = millis();
+
+    Serial.println("METAR update failed. Keeping last good display.");
   }
 }
 void handleWiFiResetButton() {
