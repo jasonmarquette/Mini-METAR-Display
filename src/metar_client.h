@@ -177,8 +177,12 @@ public:
     Serial.println(httpCode);
 
     if (httpCode != 200) {
-      http.end();
-      return false;
+        Serial.print("METAR HTTP error: ");
+        Serial.println(http.errorToString(httpCode));
+
+        http.end();
+    
+        return false;
     }
 
     String payload = http.getString();
