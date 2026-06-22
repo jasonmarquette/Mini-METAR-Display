@@ -113,7 +113,55 @@ USB serial support for the ESP32-C3 is enabled with:
 -D ARDUINO_USB_CDC_ON_BOOT=1
 ```
 
+## Flashing the Prebuilt Firmware
+
+The easiest way to install Mini METAR Display is to download the prebuilt firmware `.bin` file from GitHub Releases.
+
+Go to:
+
+[GitHub Releases](https://github.com/jasonmarquette/Mini-METAR-Display/releases)
+
+Download the latest firmware file, for example:
+
+```text
+Mini-METAR-Display-ESP32-C3-SuperMini-v0.1.0.bin
+```
+
+Then flash it using Chrome or Edge:
+
+1. Plug the ESP32-C3 Super Mini into your computer with USB.
+2. Open:
+
+```text
+https://web.esphome.io/
+```
+
+3. Click **Connect**.
+4. Select the ESP32-C3 serial port.
+5. Click **Install**.
+6. Choose **Pick a file**.
+7. Select the downloaded `.bin` firmware file.
+8. Wait for the flash process to complete.
+9. Unplug the board.
+10. Plug it back in normally.
+
+After flashing, the board should boot into the Mini METAR Display firmware.
+
+If no saved Wi-Fi settings exist, it will create the setup network:
+
+```text
+MiniMETAR-Setup
+```
+
+Connect to that network and open:
+
+```text
+http://192.168.4.1
+```
+
 ## Build Instructions
+
+These instructions are for developers who want to build the firmware from source.
 
 Open the project folder in Visual Studio Code.
 
@@ -129,7 +177,24 @@ A successful build should end with:
 SUCCESS
 ```
 
-## Upload Instructions
+The compiled firmware will be created here:
+
+```text
+.pio/build/esp32-c3-supermini/firmware.bin
+```
+
+To prepare a firmware file for a GitHub release, copy and rename it:
+
+```bash
+mkdir -p release
+cp .pio/build/esp32-c3-supermini/firmware.bin release/Mini-METAR-Display-ESP32-C3-SuperMini-v0.1.0.bin
+```
+
+Upload the renamed `.bin` file to the GitHub release.
+
+## PlatformIO Upload Instructions
+
+If you are developing the project locally, you can upload directly from PlatformIO instead of using the release `.bin`.
 
 Plug the ESP32-C3 Super Mini into the computer with USB.
 
@@ -148,27 +213,8 @@ If upload fails, put the ESP32-C3 into boot/download mode:
 5. Release `BOOT`.
 6. Run the upload command again.
 
-## Serial Monitor
+After upload finishes, unplug the board and plug it back in normally.
 
-Open the serial monitor with:
-
-```bash
-pio device monitor --port /dev/cu.usbmodem12301 --baud 115200
-```
-
-Your port may be different.
-
-To list connected serial devices:
-
-```bash
-pio device list
-```
-
-To exit the serial monitor:
-
-```text
-Ctrl + C
-```
 
 ## Wi-Fi Setup
 
