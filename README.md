@@ -121,7 +121,7 @@ Go to:
 
 [GitHub Releases](https://github.com/jasonmarquette/Mini-METAR-Display/releases)
 
-Download the latest firmware file, for example:
+1. Download the latest firmware file, for example:
 
 ```text
 Mini-METAR-Display-ESP32-C3-SuperMini-v0.1.0.bin
@@ -129,21 +129,11 @@ Mini-METAR-Display-ESP32-C3-SuperMini-v0.1.0.bin
 
 Then flash it using Chrome or Edge:
 
-1. Plug the ESP32-C3 Super Mini into your computer with USB.
-2. Open:
-
-```text
-https://web.esphome.io/
-```
-
-3. Click **Connect**.
-4. Select the ESP32-C3 serial port.
-5. Click **Install**.
-6. Choose **Pick a file**.
-7. Select the downloaded `.bin` firmware file.
-8. Wait for the flash process to complete.
-9. Unplug the board.
-10. Plug it back in normally.
+2. Put the board in download mode: unplug USB, hold BOOT, plug USB in, wait 2 seconds, release BOOT. If that fails, hold BOOT, tap RESET, release BOOT.
+3. Open https://web.esphome.io/ in Chrome or Edge.
+4. Choose Install (you do not need to set up a new ESPHome device).
+5. Select your serial port and the downloaded .bin.
+6. When it finishes, unplug, wait a few seconds, plug back in without holding BOOT.
 
 After flashing, the board should boot into the Mini METAR Display firmware.
 
